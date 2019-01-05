@@ -187,8 +187,12 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
       SyncContext.Post(
         o =>
-          new DictionaryWindow(this,
-                               text).Show(),
+        {
+          var wdw = new DictionaryWindow(this,
+                               text);
+          wdw.Show();
+          wdw.Activate();
+        },
         null
       );
     }

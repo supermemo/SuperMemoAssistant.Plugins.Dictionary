@@ -105,7 +105,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
                    "Dictionary: Lookup word"),
         LookupWord);
 
-      Container.ComposeExportedValue<IDictionaryPlugin>(this);
+      // TODO: Container.ComposeExportedValue<IDictionaryPlugin>(this);
     }
 
     /// <inheritdoc />

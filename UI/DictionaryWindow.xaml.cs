@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2019/01/01 22:07
-// Modified On:  2019/01/01 22:34
+// Modified On:  2019/02/23 14:39
 // Modified By:  Alexis
 
 #endregion
@@ -31,12 +31,12 @@
 
 
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
+using SuperMemoAssistant.Sys.Remoting;
 using SuperMemoAssistant.Sys.Windows;
 
 namespace SuperMemoAssistant.Plugins.Dictionary.UI
@@ -46,8 +46,8 @@ namespace SuperMemoAssistant.Plugins.Dictionary.UI
   {
     #region Constructors
 
-    public DictionaryWindow(IDictionaryPlugin dict,
-                            string            word)
+    public DictionaryWindow(IDictionaryService dict,
+                            string             word)
     {
       InitializeComponent();
 
@@ -62,28 +62,28 @@ namespace SuperMemoAssistant.Plugins.Dictionary.UI
 
     #region Methods
 
-    private void LookupWord(IDictionaryPlugin dict,
-                            string            word)
+    private void LookupWord(IDictionaryService dict,
+                            string             word)
     {
-      CancellationTokenSource cts = new CancellationTokenSource();
-      var entryResultTask = LookupWordEntryAsync(cts,
+      RemoteCancellationTokenSource cts = new RemoteCancellationTokenSource();
+
+      var entryResultTask = LookupWordEntryAsync(cts.Token,
                                                  word,
                                                  dict);
 
-      DataContext = new PendingEntryResult(cts,
-                                           entryResultTask,
-                                           dict);
+      DataContext = new PendingEntryResult(cts, entryResultTask, dict);
 
       Title += ": " + word;
     }
 
 
-    private async Task<EntryResult> LookupWordEntryAsync(CancellationTokenSource cts,
+    private async Task<EntryResult> LookupWordEntryAsync(RemoteCancellationToken ct,
                                                          string                  word,
-                                                         IDictionaryPlugin       dict)
+                                                         IDictionaryService      dict)
     {
-      var lemmas = await dict.LookupLemma(cts.Token,
-                                          word);
+      var lemmas = await dict.LookupLemma(
+        ct,
+        word);
 
       if (lemmas?.Results == null
         || lemmas.Results.Any() == false
@@ -96,8 +96,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.UI
       if (string.IsNullOrWhiteSpace(word))
         return null;
 
-      return await dict.LookupEntry(cts.Token,
-                                    word);
+      return await dict.LookupEntry(ct, word);
     }
 
     private void Window_KeyDown(object       sender,

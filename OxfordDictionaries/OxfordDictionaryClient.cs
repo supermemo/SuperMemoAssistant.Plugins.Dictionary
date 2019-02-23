@@ -61,8 +61,6 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
     ///   Initializes a new instance of the OxfordDictionaryClient class.  This instance should
     ///   be reused.
     /// </summary>
-    /// <param name="app_id">Oxford Dictionary application id</param>
-    /// <param name="app_key">Oxford Dictionary application key</param>
     public OxfordDictionaryClient()
     {
       _httpClient = new HttpClient();

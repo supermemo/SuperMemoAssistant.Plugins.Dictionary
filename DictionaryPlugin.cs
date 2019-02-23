@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/30 19:48
-// Modified On:  2019/01/03 03:10
+// Modified On:  2019/02/23 14:39
 // Modified By:  Alexis
 
 #endregion
@@ -31,18 +31,13 @@
 
 
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
 using mshtml;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.Plugins;
-using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
-using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
-using SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries;
 using SuperMemoAssistant.Plugins.Dictionary.UI;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Sys.ComponentModel;
@@ -50,16 +45,22 @@ using SuperMemoAssistant.Sys.IO.Devices;
 
 namespace SuperMemoAssistant.Plugins.Dictionary
 {
-  public class DictionaryPlugin : SMAPluginBase<DictionaryPlugin>, IDictionaryPlugin
+  public class DictionaryPlugin : SMAPluginBase<DictionaryPlugin>
   {
     #region Properties & Fields - Non-Public
 
-    protected DictCfg Config { get; set; }
+    private DictionaryService _dictionaryService;
 
-    private OxfordDictionaryClient OxfordDictClient { get; set; }
+    private SynchronizationContext _syncContext;
+
+    #endregion
 
 
-    protected SynchronizationContext SyncContext { get; set; }
+
+
+    #region Properties & Fields - Public
+
+    public DictCfg Config { get; private set; }
 
     #endregion
 
@@ -71,14 +72,6 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     /// <inheritdoc />
     public override string Name => "Dictionary";
 
-    /// <inheritdoc />
-    public bool CredentialsAvailable =>
-      string.IsNullOrWhiteSpace(Config.AppKey) == false
-      && string.IsNullOrWhiteSpace(Config.AppId) == false;
-
-    /// <inheritdoc />
-    public IElement RootElement => Config.RootDictElement ?? Svc.SMA.Registry.Element.Root;
-
     #endregion
 
 
@@ -87,14 +80,15 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     #region Methods Impl
 
     /// <inheritdoc />
-    protected override void OnInit()
+    protected override void PluginInit()
     {
-      SyncContext = new DispatcherSynchronizationContext();
-      SynchronizationContext.SetSynchronizationContext(SyncContext);
+      _syncContext = new DispatcherSynchronizationContext();
+      SynchronizationContext.SetSynchronizationContext(_syncContext);
 
-      OxfordDictClient = new OxfordDictionaryClient();
-      Config           = Svc<DictionaryPlugin>.Configuration.Load<DictCfg>().Result ?? new DictCfg();
-      SettingsModels   = new List<INotifyPropertyChangedEx> { Config };
+      Config         = Svc.Configuration.Load<DictCfg>().Result ?? new DictCfg();
+      SettingsModels = new List<INotifyPropertyChangedEx> { Config };
+
+      _dictionaryService = new DictionaryService();
 
       Svc.KeyboardHotKey.RegisterHotKey(
         new HotKey(true,
@@ -105,48 +99,13 @@ namespace SuperMemoAssistant.Plugins.Dictionary
                    "Dictionary: Lookup word"),
         LookupWord);
 
-      // TODO: Container.ComposeExportedValue<IDictionaryPlugin>(this);
+      PublishService<IDictionaryService, DictionaryService>(_dictionaryService);
     }
 
     /// <inheritdoc />
     public override void SettingsSaved(object cfgObject)
     {
-      Svc<DictionaryPlugin>.Configuration.Save<DictCfg>(Config).Wait();
-    }
-
-    /// <inheritdoc />
-    public Task<EntryResult> LookupEntry(CancellationToken ct,
-                                         string            word,
-                                         string            language = "en")
-    {
-      OxfordDictClient.SetAuthentication(Config.AppId,
-                                         Config.AppKey);
-
-      return OxfordDictClient.LookupEntry(ct,
-                                          word,
-                                          language);
-    }
-
-    /// <inheritdoc />
-    public Task<LemmatronResult> LookupLemma(CancellationToken ct,
-                                             string            word,
-                                             string            language = "en")
-    {
-      OxfordDictClient.SetAuthentication(Config.AppId,
-                                         Config.AppKey);
-
-      return OxfordDictClient.LookupLemma(ct,
-                                          word,
-                                          language);
-    }
-
-    /// <inheritdoc />
-    public Task<List<OxfordDictionary>> GetAvailableDictionaries(CancellationToken ct)
-    {
-      OxfordDictClient.SetAuthentication(Config.AppId,
-                                         Config.AppKey);
-
-      return OxfordDictClient.GetAvailableDictionaries(ct);
+      Svc.Configuration.Save<DictCfg>(Config).Wait();
     }
 
     #endregion
@@ -165,7 +124,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
       if (!(sel?.createRange() is IHTMLTxtRange textSel))
         return;
-      
+
       var text = textSel.text?.Trim(' ',
                                     '\t',
                                     '\r',
@@ -185,11 +144,11 @@ namespace SuperMemoAssistant.Plugins.Dictionary
         return;
       */
 
-      SyncContext.Post(
+      _syncContext.Post(
         o =>
         {
-          var wdw = new DictionaryWindow(this,
-                               text);
+          var wdw = new DictionaryWindow(_dictionaryService,
+                                         text);
           wdw.Show();
           wdw.Activate();
         },

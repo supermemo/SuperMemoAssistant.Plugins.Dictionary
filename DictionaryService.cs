@@ -41,7 +41,7 @@ using SuperMemoAssistant.Sys.Remoting;
 
 namespace SuperMemoAssistant.Plugins.Dictionary
 {
-  internal class DictionaryService : SMMarshalByRefObject, IDictionaryService
+  internal class DictionaryService : PerpetualMarshalByRefObject, IDictionaryService
   {
     #region Properties & Fields - Non-Public
 

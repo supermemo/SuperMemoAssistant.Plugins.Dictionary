@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2018/12/31 00:20
-// Modified On:  2019/01/01 17:22
+// Modified On:  2019/02/23 23:19
 // Modified By:  Alexis
 
 #endregion
@@ -59,7 +59,10 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     public string ElementField
     {
       // ReSharper disable once ValueParameterNotUsed
-      set { /* empty */ }
+      set
+      {
+        /* empty */
+      }
       get => RootDictElement == null
         ? "N/A"
         : RootDictElement.ToString();

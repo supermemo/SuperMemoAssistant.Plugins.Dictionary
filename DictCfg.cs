@@ -41,6 +41,15 @@ using SuperMemoAssistant.UI;
 namespace SuperMemoAssistant.Plugins.Dictionary
 {
   [Form(Mode = DefaultFields.None)]
+  [Title("Dictionary Settings",
+    IsVisible = "{Env DialogHostContext}")]
+  [DialogAction("cancel",
+    "Cancel",
+    IsCancel = true)]
+  [DialogAction("save",
+    "Save",
+    IsDefault = true,
+    Validates = true)]
   public class DictCfg : IElementPickerCallback, INotifyPropertyChangedEx
   {
     #region Properties & Fields - Public

@@ -31,6 +31,7 @@
 
 
 using System.Threading;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using mshtml;
@@ -70,6 +71,8 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
     /// <inheritdoc />
     public override string Name => "Dictionary";
+    
+    public override bool HasSettings => true;
 
     #endregion
 
@@ -85,7 +88,6 @@ namespace SuperMemoAssistant.Plugins.Dictionary
       SynchronizationContext.SetSynchronizationContext(_syncContext);
 
       Config = Svc.Configuration.Load<DictCfg>().Result ?? new DictCfg();
-      //SettingsModels = new List<INotifyPropertyChangedEx> { Config };
 
       _dictionaryService = new DictionaryService();
 
@@ -99,6 +101,22 @@ namespace SuperMemoAssistant.Plugins.Dictionary
         LookupWord);
 
       PublishService<IDictionaryService, DictionaryService>(_dictionaryService);
+    }
+
+    public override void ShowSettings()
+    {
+      Application.Current.Dispatcher.Invoke(
+        () =>
+        {
+          Forge.Forms.Show.Window(550).For<DictCfg>(Config).Wait();
+
+          if (Config.IsChanged)
+          {
+            Svc.Configuration.Save<DictCfg>(Config).Wait();
+            Config.IsChanged = false;
+          }
+        }
+      );
     }
 
     #endregion
@@ -150,13 +168,5 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     }
 
     #endregion
-
-
-
-
-    //public override void SettingsSaved(object cfgObject)
-    //{
-    //  Svc.Configuration.Save<DictCfg>(Config).Wait();
-    //}
   }
 }

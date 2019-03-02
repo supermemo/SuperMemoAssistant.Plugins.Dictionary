@@ -39,7 +39,9 @@ using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.UI;
 using SuperMemoAssistant.Services;
+using SuperMemoAssistant.Services.IO.HotKeys;
 using SuperMemoAssistant.Services.Sentry;
+using SuperMemoAssistant.Services.UI.Configuration;
 using SuperMemoAssistant.Sys.IO.Devices;
 
 namespace SuperMemoAssistant.Plugins.Dictionary
@@ -91,31 +93,21 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
       _dictionaryService = new DictionaryService();
 
-      Svc.KeyboardHotKey.RegisterHotKey(
-        new HotKey(true,
-                   true,
-                   false,
-                   false,
-                   Key.D,
-                   "Dictionary: Lookup word"),
-        LookupWord);
+      Svc.HotKeyManager.RegisterGlobal(
+        "LookupWord",
+        "Dictionary: Lookup word",
+        new HotKey(Key.D, KeyModifiers.CtrlAlt),
+        LookupWord
+      );
 
       PublishService<IDictionaryService, DictionaryService>(_dictionaryService);
     }
-
+    
+    /// <inheritdoc />
     public override void ShowSettings()
     {
       Application.Current.Dispatcher.Invoke(
-        () =>
-        {
-          Forge.Forms.Show.Window(550).For<DictCfg>(Config).Wait();
-
-          if (Config.IsChanged)
-          {
-            Svc.Configuration.Save<DictCfg>(Config).Wait();
-            Config.IsChanged = false;
-          }
-        }
+        () => new ConfigurationWindow(HotKeyManager.Instance, Config).ShowAndActivate()
       );
     }
 
@@ -160,8 +152,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
         {
           var wdw = new DictionaryWindow(_dictionaryService,
                                          text);
-          wdw.Show();
-          wdw.Activate();
+          wdw.ShowAndActivate();
         },
         null
       );

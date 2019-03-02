@@ -30,13 +30,14 @@
 
 
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using Forge.Forms.Annotations;
 using Newtonsoft.Json;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using SuperMemoAssistant.Services;
+using SuperMemoAssistant.Services.UI.Configuration.ElementPicker;
 using SuperMemoAssistant.Sys.ComponentModel;
-using SuperMemoAssistant.UI;
 
 namespace SuperMemoAssistant.Plugins.Dictionary
 {
@@ -53,6 +54,10 @@ namespace SuperMemoAssistant.Plugins.Dictionary
   public class DictCfg : IElementPickerCallback, INotifyPropertyChangedEx
   {
     #region Properties & Fields - Public
+
+    [Field(Name                                    = "Layout")]
+    [SelectFrom("{Binding Layouts}", SelectionType = SelectionType.ComboBox)]
+    public string Layout { get; set; }
 
     [Field(Name = "Oxford Dict. App Id")]
     public string AppId { get; set; }
@@ -76,9 +81,18 @@ namespace SuperMemoAssistant.Plugins.Dictionary
         ? "N/A"
         : RootDictElement.ToString();
     }
+
+    public int RootDictElementId { get; set; }
+
+
+    //
+    // Helpers
+    
+    [JsonIgnore]
+    public IEnumerable<string> Layouts => Svc.SMA.Layouts;
+
     [JsonIgnore]
     public IElement RootDictElement => Svc.SMA.Registry.Element[RootDictElementId <= 0 ? 1 : RootDictElementId];
-    public int RootDictElementId { get; set; }
 
     #endregion
 

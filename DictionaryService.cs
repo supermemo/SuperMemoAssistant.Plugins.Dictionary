@@ -22,7 +22,7 @@
 // 
 // 
 // Created On:   2019/02/22 23:25
-// Modified On:  2019/02/23 14:40
+// Modified On:  2019/03/02 01:05
 // Modified By:  Alexis
 
 #endregion
@@ -72,8 +72,12 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     public bool CredentialsAvailable =>
       string.IsNullOrWhiteSpace(Config.AppKey) == false
       && string.IsNullOrWhiteSpace(Config.AppId) == false;
+
     /// <inheritdoc />
     public IElement RootElement => Config.RootDictElement ?? Svc.SMA.Registry.Element.Root;
+
+    /// <inheritdoc />
+    public string Layout => Config.Layout;
 
     #endregion
 

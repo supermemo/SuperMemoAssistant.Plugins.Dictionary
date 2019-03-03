@@ -31,6 +31,7 @@
 
 
 using System.Collections.Generic;
+using Anotar.Serilog;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
@@ -87,6 +88,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     #region Methods Impl
 
     /// <inheritdoc />
+    [LogToErrorOnException]
     public RemoteTask<EntryResult> LookupEntry(RemoteCancellationToken ct,
                                                string                  word,
                                                string                  language = "en")
@@ -100,6 +102,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     }
 
     /// <inheritdoc />
+    [LogToErrorOnException]
     public RemoteTask<LemmatronResult> LookupLemma(RemoteCancellationToken ct,
                                                    string                  word,
                                                    string                  language = "en")
@@ -113,6 +116,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     }
 
     /// <inheritdoc />
+    [LogToErrorOnException]
     public RemoteTask<List<OxfordDictionary>> GetAvailableDictionaries(RemoteCancellationToken ct)
     {
       OxfordDictClient.SetAuthentication(Config.AppId,

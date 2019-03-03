@@ -34,12 +34,14 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Anotar.Serilog;
 using mshtml;
 using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.UI;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Services.IO.HotKeys;
+using SuperMemoAssistant.Services.IO.Keyboard;
 using SuperMemoAssistant.Services.Sentry;
 using SuperMemoAssistant.Services.UI.Configuration;
 using SuperMemoAssistant.Sys.IO.Devices;
@@ -96,6 +98,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
       Svc.HotKeyManager.RegisterGlobal(
         "LookupWord",
         "Dictionary: Lookup word",
+        HotKeyScope.SMBrowser,
         new HotKey(Key.D, KeyModifiers.CtrlAlt),
         LookupWord
       );
@@ -117,7 +120,8 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
 
     #region Methods
-
+    
+    [LogToErrorOnException]
     public void LookupWord()
     {
       var ctrlGroup = Svc.SMA.UI.ElementWindow.ControlGroup;

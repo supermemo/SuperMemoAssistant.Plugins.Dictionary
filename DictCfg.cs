@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/31 00:20
-// Modified On:  2019/02/23 23:19
+// Created On:   2019/03/02 18:29
+// Modified On:  2019/03/28 15:23
 // Modified By:  Alexis
 
 #endregion
@@ -35,6 +35,7 @@ using System.ComponentModel;
 using Forge.Forms.Annotations;
 using Newtonsoft.Json;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
+using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Services.UI.Configuration.ElementPicker;
 using SuperMemoAssistant.Sys.ComponentModel;
@@ -59,6 +60,15 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     [SelectFrom("{Binding Layouts}", SelectionType = SelectionType.ComboBox)]
     public string Layout { get; set; }
 
+    [Field(Name = "Default Extract Priority (%)")]
+    [Value(Must.BeGreaterThanOrEqualTo,
+      0,
+      StrictValidation = true)]
+    [Value(Must.BeLessThanOrEqualTo,
+      100,
+      StrictValidation = true)]
+    public double ExtractPriority { get; set; } = DictionaryConst.DefaultExtractPriority;
+
     [Field(Name = "Oxford Dict. App Id")]
     public string AppId { get; set; }
     [Field(Name = "Oxford Dict. App Key")]
@@ -82,12 +92,18 @@ namespace SuperMemoAssistant.Plugins.Dictionary
         : RootDictElement.ToString();
     }
 
+
+    //
+    // Config only
+
     public int RootDictElementId { get; set; }
+
+    public string OxfordLanguagesJson { get; set; } = DictionaryConst.OxfordLanguagesJson;
 
 
     //
     // Helpers
-    
+
     [JsonIgnore]
     public IEnumerable<string> Layouts => Svc.SMA.Layouts;
 
@@ -120,6 +136,8 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     public void SetElement(IElement elem)
     {
       RootDictElementId = elem.Id;
+
+      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ElementField)));
     }
 
     #endregion

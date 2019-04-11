@@ -30,10 +30,8 @@
 
 
 
-using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Anotar.Serilog;
 using mshtml;
 using SuperMemoAssistant.Extensions;
@@ -54,8 +52,6 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     #region Properties & Fields - Non-Public
 
     private DictionaryService _dictionaryService;
-
-    private SynchronizationContext _syncContext;
 
     #endregion
 
@@ -88,9 +84,6 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     /// <inheritdoc />
     protected override void PluginInit()
     {
-      _syncContext = new DispatcherSynchronizationContext();
-      SynchronizationContext.SetSynchronizationContext(_syncContext);
-
       Config = Svc.Configuration.Load<DictCfg>().Result ?? new DictCfg();
 
       _dictionaryService = new DictionaryService();
@@ -151,14 +144,13 @@ namespace SuperMemoAssistant.Plugins.Dictionary
         return;
       */
 
-      _syncContext.Post(
-        o =>
+      Application.Current.Dispatcher.Invoke(
+        () =>
         {
           var wdw = new DictionaryWindow(_dictionaryService,
                                          text);
           wdw.ShowAndActivate();
-        },
-        null
+        }
       );
     }
 

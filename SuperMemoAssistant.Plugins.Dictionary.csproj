@@ -169,7 +169,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
+    <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="UI\DictionaryWindow.xaml">

@@ -75,8 +75,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.UI
 
       Title += ": " + word;
     }
-
-
+    
     private async Task<EntryResult> LookupWordEntryAsync(RemoteCancellationToken ct,
                                                          string                  word,
                                                          IDictionaryService      dict)
@@ -97,6 +96,14 @@ namespace SuperMemoAssistant.Plugins.Dictionary.UI
         return null;
 
       return await dict.LookupEntry(ct, word);
+    }
+
+    private bool OnAfterExtract(bool success)
+    {
+      if (success)
+        Close();
+
+      return true;
     }
 
     private void Window_KeyDown(object       sender,

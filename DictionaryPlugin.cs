@@ -119,7 +119,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     {
       var ctrlGroup = Svc.SMA.UI.ElementWindow.ControlGroup;
       var htmlCtrl  = ctrlGroup?.FocusedControl.AsHtml();
-      var htmlDoc   = htmlCtrl?.Document;
+      var htmlDoc   = htmlCtrl?.GetDocument();
       var sel       = htmlDoc?.selection;
 
       if (!(sel?.createRange() is IHTMLTxtRange textSel))

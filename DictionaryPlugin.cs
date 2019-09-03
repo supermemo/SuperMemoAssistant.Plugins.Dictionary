@@ -117,7 +117,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     [LogToErrorOnException]
     public void LookupWord()
     {
-      var ctrlGroup = Svc.SMA.UI.ElementWindow.ControlGroup;
+      var ctrlGroup = Svc.SM.UI.ElementWdw.ControlGroup;
       var htmlCtrl  = ctrlGroup?.FocusedControl.AsHtml();
       var htmlDoc   = htmlCtrl?.GetDocument();
       var sel       = htmlDoc?.selection;

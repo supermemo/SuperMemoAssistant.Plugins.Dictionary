@@ -108,7 +108,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     public IEnumerable<string> Layouts => Svc.SMA.Layouts;
 
     [JsonIgnore]
-    public IElement RootDictElement => Svc.SMA.Registry.Element[RootDictElementId <= 0 ? 1 : RootDictElementId];
+    public IElement RootDictElement => Svc.SM.Registry.Element[RootDictElementId <= 0 ? 1 : RootDictElementId];
 
     #endregion
 

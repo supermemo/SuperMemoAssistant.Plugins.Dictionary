@@ -76,7 +76,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
       && string.IsNullOrWhiteSpace(Config.AppId) == false;
 
     /// <inheritdoc />
-    public IElement RootElement => Config.RootDictElement ?? Svc.SMA.Registry.Element.Root;
+    public IElement RootElement => Config.RootDictElement ?? Svc.SM.Registry.Element.Root;
 
     /// <inheritdoc />
     public string Layout => Config.Layout;

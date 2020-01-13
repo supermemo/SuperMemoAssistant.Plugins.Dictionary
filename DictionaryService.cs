@@ -60,7 +60,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     public DictionaryService()
     {
       OxfordDictClient = new OxfordDictionaryClient();
-      //AvailableLanguages = Config.OxfordLanguagesJson;
+      AvailableLanguages = null; //Config.OxfordLanguagesJson;
     }
 
     #endregion

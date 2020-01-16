@@ -6,7 +6,7 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 // 
 // The above copyright notice and this permission notice shall be included in
@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2019/03/02 18:29
-// Modified On:  2019/03/28 15:23
+// Created On:   2020/01/13 16:51
+// Modified On:  2020/01/15 23:55
 // Modified By:  Alexis
 
 #endregion
@@ -32,10 +32,14 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Forge.Forms.Annotations;
 using Newtonsoft.Json;
+using PropertyChanged;
+using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
+using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
 using SuperMemoAssistant.Services;
 using SuperMemoAssistant.Services.UI.Configuration.ElementPicker;
 using SuperMemoAssistant.Sys.ComponentModel;
@@ -44,14 +48,14 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 {
   [Form(Mode = DefaultFields.None)]
   [Title("Dictionary Settings",
-    IsVisible = "{Env DialogHostContext}")]
+         IsVisible = "{Env DialogHostContext}")]
   [DialogAction("cancel",
-    "Cancel",
-    IsCancel = true)]
+                "Cancel",
+                IsCancel = true)]
   [DialogAction("save",
-    "Save",
-    IsDefault = true,
-    Validates = true)]
+                "Save",
+                IsDefault = true,
+                Validates = true)]
   public class DictCfg : IElementPickerCallback, INotifyPropertyChangedEx
   {
     #region Properties & Fields - Public
@@ -62,11 +66,11 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
     [Field(Name = "Default Extract Priority (%)")]
     [Value(Must.BeGreaterThanOrEqualTo,
-      0,
-      StrictValidation = true)]
+           0,
+           StrictValidation = true)]
     [Value(Must.BeLessThanOrEqualTo,
-      100,
-      StrictValidation = true)]
+           100,
+           StrictValidation = true)]
     public double ExtractPriority { get; set; } = DictionaryConst.DefaultExtractPriority;
 
     [Field(Name = "Oxford Dict. App Id")]
@@ -75,11 +79,21 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     public string AppKey { get; set; }
 
     [JsonIgnore]
+    [DependsOn(nameof(DefaultLanguage))]
+    [Field(Name                                        = "Default dictionary")]
+    [SelectFrom("{Binding MonolingualDictionaries}", SelectionType = SelectionType.ComboBox)]
+    public string DefaultLanguageStr
+    {
+      get => DefaultLanguage.ToString();
+      set => DefaultLanguage = MonolingualDictionaries.SafeGet(value) ?? DictionaryConst.DefaultDictionary;
+    }
+
+    [JsonIgnore]
     [Action(ElementPicker.ElementPickerAction,
-      "Browse",
-      Placement = Placement.Inline)]
-    [Field(Name  = "Root Element",
-      IsReadOnly = true)]
+            "Browse",
+            Placement = Placement.Inline)]
+    [Field(Name       = "Root Element",
+           IsReadOnly = true)]
     public string ElementField
     {
       // ReSharper disable once ValueParameterNotUsed
@@ -92,13 +106,17 @@ namespace SuperMemoAssistant.Plugins.Dictionary
         : RootDictElement.ToString();
     }
 
+    [Field(Name = "Render template (mustache)")]
+    [MultiLine]
+    public string RenderTemplate { get; set; } = DictionaryConst.DefinitionRenderTemplate;
+
 
     //
     // Config only
 
     public int RootDictElementId { get; set; }
 
-    public string OxfordLanguagesJson { get; set; } = DictionaryConst.OxfordLanguagesJson;
+    public OxfordDictionary DefaultLanguage { get; set; } = DictionaryConst.DefaultDictionary;
 
 
     //
@@ -106,6 +124,9 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
     [JsonIgnore]
     public IEnumerable<string> Layouts => Svc.SMA.Layouts;
+
+    [JsonIgnore]
+    public IReadOnlyDictionary<string, OxfordDictionary> MonolingualDictionaries => DictionaryConst.MonolingualDictionaries;
 
     [JsonIgnore]
     public IElement RootDictElement => Svc.SM.Registry.Element[RootDictElementId <= 0 ? 1 : RootDictElementId];

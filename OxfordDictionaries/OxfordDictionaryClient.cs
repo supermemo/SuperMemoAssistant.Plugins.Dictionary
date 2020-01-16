@@ -36,9 +36,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Anotar.Serilog;
 using Newtonsoft.Json;
+using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
-using SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries.Converters;
 
 // ReSharper disable InconsistentNaming
 
@@ -65,7 +66,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
     {
       _httpClient = new HttpClient();
       _httpClient.DefaultRequestHeaders.Accept.Clear();
-      _httpClient.BaseAddress = new Uri(@"https://od-api.oxforddictionaries.com/api/v1/");
+      _httpClient.BaseAddress = new Uri(@"https://od-api.oxforddictionaries.com/api/v2/");
       _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
@@ -110,24 +111,32 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
     /// </exception>
     public async Task<EntryResult> LookupEntry(CancellationToken ct,
                                                string            word,
-                                               string            language = "en")
+                                               string            language = "en-gb")
     {
-      if (string.IsNullOrWhiteSpace(word) || string.IsNullOrWhiteSpace(language))
-        throw new ArgumentNullException(nameof(word));
+      try
+      {
+        if (string.IsNullOrWhiteSpace(word) || string.IsNullOrWhiteSpace(language))
+          throw new ArgumentNullException(nameof(word));
 
-      word = word.Trim()
-                 .Replace(" ",
-                          "_")
-                 .ToLower();
-      var searchPath = $"entries/{language}/{word}";
+        word = word.Trim()
+                   .Replace(" ",
+                            "_")
+                   .ToLower();
+        var searchPath = $"entries/{language}/{word}";
 
-      var jsonString = await SendHttpGetRequest(searchPath,
-                                                ct);
+        var jsonString = await SendHttpGetRequest(searchPath,
+                                                  ct);
 
-      if (jsonString == null)
-        return null;
+        if (jsonString == null)
+          return null;
 
-      return JsonConvert.DeserializeObject<EntryResult>(jsonString);
+        return JsonConvert.DeserializeObject<EntryResult>(jsonString);
+      }
+      catch (Exception ex)
+      {
+        LogTo.Error(ex, $"Exception caught while looking up entry for word {word}");
+        throw;
+      }
     }
 
     /// <summary>
@@ -148,24 +157,32 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
     /// </exception>
     public async Task<LemmatronResult> LookupLemma(CancellationToken ct,
                                                    string            word,
-                                                   string            language = "en")
+                                                   string            language = "en-gb")
     {
-      if (string.IsNullOrWhiteSpace(word) || string.IsNullOrWhiteSpace(language))
-        throw new ArgumentNullException(nameof(word));
+      try
+      {
+        if (string.IsNullOrWhiteSpace(word) || string.IsNullOrWhiteSpace(language))
+          throw new ArgumentNullException(nameof(word));
 
-      word = word.Trim()
-                 .Replace(" ",
-                          "_")
-                 .ToLower();
-      var searchPath = $"inflections/{language}/{word}";
+        word = word.Trim()
+                   .Replace(" ",
+                            "_")
+                   .ToLower();
+        var searchPath = $"lemmas/{language}/{word}";
 
-      var jsonString = await SendHttpGetRequest(searchPath,
-                                                ct);
+        var jsonString = await SendHttpGetRequest(searchPath,
+                                                  ct);
 
-      if (jsonString == null)
-        return null;
+        if (jsonString == null)
+          return null;
 
-      return JsonConvert.DeserializeObject<LemmatronResult>(jsonString);
+        return JsonConvert.DeserializeObject<LemmatronResult>(jsonString);
+      }
+      catch (Exception ex)
+      {
+        LogTo.Error(ex, $"Exception caught while looking up lemma for word {word}");
+        throw;
+      }
     }
 
     /// <summary>Get available dictionaries in Oxforad Dictionary API, return null if not found</summary>
@@ -187,23 +204,27 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
                                                                        string            sourceLanguage = null,
                                                                        string            targetLanguage = null)
     {
-      var path = "languages";
+      try
+      {
+        var path = "languages";
 
-      if (!string.IsNullOrWhiteSpace(sourceLanguage) && string.IsNullOrWhiteSpace(targetLanguage))
-        path += $"?sourceLanguage={sourceLanguage}";
-      else if (string.IsNullOrWhiteSpace(sourceLanguage) && !string.IsNullOrWhiteSpace(targetLanguage))
-        path += $"?targetLanguage={targetLanguage}";
-      else if (!string.IsNullOrWhiteSpace(sourceLanguage) && !string.IsNullOrWhiteSpace(targetLanguage))
-        path += $"?sourceLanguage={sourceLanguage}&targetLanguage={targetLanguage}";
+        if (!string.IsNullOrWhiteSpace(sourceLanguage) && string.IsNullOrWhiteSpace(targetLanguage))
+          path += $"?sourceLanguage={sourceLanguage}";
+        else if (string.IsNullOrWhiteSpace(sourceLanguage) && !string.IsNullOrWhiteSpace(targetLanguage))
+          path += $"?targetLanguage={targetLanguage}";
+        else if (!string.IsNullOrWhiteSpace(sourceLanguage) && !string.IsNullOrWhiteSpace(targetLanguage))
+          path += $"?sourceLanguage={sourceLanguage}&targetLanguage={targetLanguage}";
 
-      string jsonString = await SendHttpGetRequest(path,
-                                                   ct);
+        string jsonString = await SendHttpGetRequest(path,
+                                                     ct);
 
-      if (jsonString == null)
-        return null;
-
-      return JsonConvert.DeserializeObject<List<OxfordDictionary>>(jsonString,
-                                                                   new OxfordDictionaryConverter());
+        return jsonString?.Deserialize<List<OxfordDictionary>>();
+      }
+      catch (Exception ex)
+      {
+        LogTo.Error(ex, $"Exception caught while fetching available dictionaries");
+        throw;
+      }
     }
 
     private async Task<string> SendHttpGetRequest(string            path,

@@ -80,9 +80,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.UI
                                                          string                  word,
                                                          IDictionaryService      dict)
     {
-      var lemmas = await dict.LookupLemma(
-        ct,
-        word);
+      var lemmas = await dict.LookupLemma(ct, word, dict.DefaultDictionary.GetLanguageId());
 
       if (lemmas?.Results == null
         || lemmas.Results.Any() == false
@@ -95,7 +93,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.UI
       if (string.IsNullOrWhiteSpace(word))
         return null;
 
-      return await dict.LookupEntry(ct, word);
+      return await dict.LookupEntry(ct, word, dict.DefaultDictionary.GetLanguageId());
     }
 
     private bool OnAfterExtract(bool success)

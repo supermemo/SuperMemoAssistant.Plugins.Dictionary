@@ -6,7 +6,7 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 // 
 // The above copyright notice and this permission notice shall be included in
@@ -21,8 +21,8 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2019/02/22 23:25
-// Modified On:  2019/03/02 01:05
+// Created On:   2020/01/13 16:51
+// Modified On:  2020/01/15 17:24
 // Modified By:  Alexis
 
 #endregion
@@ -30,8 +30,14 @@
 
 
 
+using System;
 using System.Collections.Generic;
 using Anotar.Serilog;
+using Stubble.Core;
+using Stubble.Core.Builders;
+using Stubble.Core.Exceptions;
+using Stubble.Helpers;
+using SuperMemoAssistant.Extensions;
 using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
@@ -47,7 +53,8 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     #region Properties & Fields - Non-Public
 
     private DictCfg                Config           => Svc<DictionaryPlugin>.Plugin.Config;
-    private OxfordDictionaryClient OxfordDictClient { get; set; }
+    private OxfordDictionaryClient OxfordDictClient { get; }
+    private StubbleVisitorRenderer MustacheEngine   { get; }
 
     #endregion
 
@@ -60,7 +67,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     public DictionaryService()
     {
       OxfordDictClient = new OxfordDictionaryClient();
-      AvailableLanguages = null; //Config.OxfordLanguagesJson;
+      MustacheEngine   = CreateStubbleVisitor();
     }
 
     #endregion
@@ -83,7 +90,25 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     /// <inheritdoc />
     public double ExtractPriority => Config.ExtractPriority;
     /// <inheritdoc />
-    public List<string> AvailableLanguages { get; private set; }
+    public OxfordDictionary DefaultDictionary =>
+      Config.DefaultLanguage ?? DictionaryConst.DefaultDictionary;
+
+    #endregion
+
+
+
+
+    #region Methods
+
+    private StubbleVisitorRenderer CreateStubbleVisitor()
+    {
+      var helpers = new Helpers()
+        .Register<string>("F_Escape", (_, str) => str.HtmlEncode());
+
+      return new StubbleBuilder()
+             .Configure(conf => conf.AddHelpers(helpers))
+             .Build();
+    }
 
     #endregion
 
@@ -96,8 +121,15 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     [LogToErrorOnException]
     public RemoteTask<EntryResult> LookupEntry(RemoteCancellationToken ct,
                                                string                  word,
-                                               string                  language = "en")
+                                               string                  language = "en-gb")
     {
+      if (DictionaryConst.AllMonolingualLanguages.Contains(language) == false)
+      {
+        LogTo.Warning($"Invalid language requested: {language}");
+        // ReSharper disable once LocalizableElement
+        throw new ArgumentException($"Invalid language requested: {language}", nameof(language));
+      }
+
       OxfordDictClient.SetAuthentication(Config.AppId,
                                          Config.AppKey);
 
@@ -110,8 +142,15 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     [LogToErrorOnException]
     public RemoteTask<LemmatronResult> LookupLemma(RemoteCancellationToken ct,
                                                    string                  word,
-                                                   string                  language = "en")
+                                                   string                  language = "en-gb")
     {
+      if (DictionaryConst.AllMonolingualLanguages.Contains(language) == false)
+      {
+        LogTo.Warning($"Invalid language requested: {language}");
+        // ReSharper disable once LocalizableElement
+        throw new ArgumentException($"Invalid language requested: {language}", nameof(language));
+      }
+
       OxfordDictClient.SetAuthentication(Config.AppId,
                                          Config.AppKey);
 
@@ -120,7 +159,6 @@ namespace SuperMemoAssistant.Plugins.Dictionary
                                           language);
     }
 
-    /// <inheritdoc />
     [LogToErrorOnException]
     public RemoteTask<List<OxfordDictionary>> GetAvailableDictionaries(RemoteCancellationToken ct)
     {
@@ -130,6 +168,37 @@ namespace SuperMemoAssistant.Plugins.Dictionary
       return OxfordDictClient.GetAvailableDictionaries(ct.Token());
     }
 
-    #endregion
+    /// <inheritdoc />
+    [LogToErrorOnException]
+    public RemoteTask<string> ApplyUserTemplate(EntryResult entryResult)
+    {
+      // TODO: Use Stubble.Compilation
+      return MustacheEngine.RenderAsync(Config.RenderTemplate, entryResult)
+                           .AsTask()
+                           .ConfigureRemoteTask(ex =>
+                           {
+                             switch (ex)
+                             {
+                               case StubbleException stubbleException:
+                                 var errorMsg = @$"Mustache rendering failed.
+Template:
+-------------------------------------
+{Config.RenderTemplate}
+
+Data:
+-------------------------------------
+{entryResult.Serialize()}";
+
+                                 LogTo.Warning(stubbleException, errorMsg);
+                                 break;
+
+                               default:
+                                 LogTo.Error(ex, "An exception was thrown while applying user template");
+                                 break;
+                             }
+                           });
+
+      #endregion
+    }
   }
 }

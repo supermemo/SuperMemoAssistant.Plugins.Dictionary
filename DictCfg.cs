@@ -32,7 +32,6 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Forge.Forms.Annotations;
 using Newtonsoft.Json;
 using PropertyChanged;

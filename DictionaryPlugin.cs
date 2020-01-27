@@ -147,8 +147,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
       Application.Current.Dispatcher.Invoke(
         () =>
         {
-          var wdw = new DictionaryWindow(_dictionaryService,
-                                         text);
+          var wdw = new DictionaryWindow(_dictionaryService, text);
           wdw.ShowAndActivate();
         }
       );

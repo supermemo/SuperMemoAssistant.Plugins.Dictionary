@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using Anotar.Serilog;
+using PluginManager.Interop.Sys;
 using Stubble.Core;
 using Stubble.Core.Builders;
 using Stubble.Core.Exceptions;
@@ -43,7 +44,6 @@ using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
 using SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries;
 using SuperMemoAssistant.Services;
-using SuperMemoAssistant.Sys;
 using SuperMemoAssistant.Sys.Remoting;
 
 namespace SuperMemoAssistant.Plugins.Dictionary

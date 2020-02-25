@@ -6,7 +6,7 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 // 
 // The above copyright notice and this permission notice shall be included in
@@ -21,8 +21,7 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 // 
-// Created On:   2018/12/30 19:48
-// Modified On:  2019/02/25 17:45
+// Modified On:  2020/02/21 15:49
 // Modified By:  Alexis
 
 #endregion
@@ -58,6 +57,16 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
 
 
+    #region Constructors
+
+    /// <inheritdoc />
+    public DictionaryPlugin() : base("https://a63c3dad9552434598dae869d2026696@sentry.io/1362046") { }
+
+    #endregion
+
+
+
+
     #region Properties & Fields - Public
 
     public DictCfg Config { get; private set; }
@@ -71,7 +80,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
     /// <inheritdoc />
     public override string Name => "Dictionary";
-    
+
     public override bool HasSettings => true;
 
     #endregion
@@ -98,7 +107,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
       PublishService<IDictionaryService, DictionaryService>(_dictionaryService);
     }
-    
+
     /// <inheritdoc />
     public override void ShowSettings()
     {
@@ -113,7 +122,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
 
     #region Methods
-    
+
     [LogToErrorOnException]
     public void LookupWord()
     {

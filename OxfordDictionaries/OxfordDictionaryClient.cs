@@ -66,7 +66,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
     {
       _httpClient = new HttpClient();
       _httpClient.DefaultRequestHeaders.Accept.Clear();
-      _httpClient.BaseAddress = new Uri(@"https://od-api.oxforddictionaries.com/api/v2/");
+      _httpClient.BaseAddress = new Uri("https://od-api.oxforddictionaries.com/api/v2/");
       _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
@@ -88,10 +88,8 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
       _httpClient.DefaultRequestHeaders.Remove("app_id");
       _httpClient.DefaultRequestHeaders.Remove("app_key");
 
-      _httpClient.DefaultRequestHeaders.Add("app_id",
-                                            appId);
-      _httpClient.DefaultRequestHeaders.Add("app_key",
-                                            appKey);
+      _httpClient.DefaultRequestHeaders.Add("app_id", appId);
+      _httpClient.DefaultRequestHeaders.Add("app_key", appKey);
     }
 
     /// <summary>
@@ -119,8 +117,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
           throw new ArgumentNullException(nameof(word));
 
         word = word.Trim()
-                   .Replace(" ",
-                            "_")
+                   .Replace(" ", "_")
                    .ToLower();
         var searchPath = $"entries/{language}/{word}";
 
@@ -165,8 +162,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
           throw new ArgumentNullException(nameof(word));
 
         word = word.Trim()
-                   .Replace(" ",
-                            "_")
+                   .Replace(" ", "_")
                    .ToLower();
         var searchPath = $"lemmas/{language}/{word}";
 
@@ -185,7 +181,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
       }
     }
 
-    /// <summary>Get available dictionaries in Oxforad Dictionary API, return null if not found</summary>
+    /// <summary>Get available dictionaries in Oxford Dictionary API, return null if not found</summary>
     /// <param name="ct">CancellationToken use for cancel</param>
     /// <param name="sourceLanguage">
     ///   IANA language code. If provided output will be filtered by
@@ -215,14 +211,13 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
         else if (!string.IsNullOrWhiteSpace(sourceLanguage) && !string.IsNullOrWhiteSpace(targetLanguage))
           path += $"?sourceLanguage={sourceLanguage}&targetLanguage={targetLanguage}";
 
-        string jsonString = await SendHttpGetRequest(path,
-                                                     ct);
+        string jsonString = await SendHttpGetRequest(path, ct);
 
         return jsonString?.Deserialize<List<OxfordDictionary>>();
       }
       catch (Exception ex)
       {
-        LogTo.Error(ex, $"Exception caught while fetching available dictionaries");
+        LogTo.Error(ex, "Exception caught while fetching available dictionaries");
         throw;
       }
     }
@@ -234,8 +229,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
 
       try
       {
-        responseMsg = await _httpClient.GetAsync(path,
-                                                 ct);
+        responseMsg = await _httpClient.GetAsync(path, ct);
 
         if (responseMsg.IsSuccessStatusCode)
         {
@@ -248,12 +242,14 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
           return null;
         }
       }
-      catch (HttpRequestException)
+      catch (HttpRequestException) when (responseMsg != null && responseMsg.StatusCode == System.Net.HttpStatusCode.NotFound)
       {
-        if (responseMsg != null && responseMsg.StatusCode == System.Net.HttpStatusCode.NotFound)
-          return null;
-        else
-          throw;
+        return null;
+      }
+      catch (HttpRequestException) when (responseMsg != null && responseMsg.StatusCode == System.Net.HttpStatusCode.Forbidden)
+      {
+        LogTo.Warning($"Request GET '{path}' failed: 403 Forbidden. Please check your credentials");
+        return "Authentication failed. Please check your API credentials";
       }
       catch (OperationCanceledException)
       {

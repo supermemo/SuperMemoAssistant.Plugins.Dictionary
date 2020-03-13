@@ -40,6 +40,7 @@ using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
 using SuperMemoAssistant.Plugins.Dictionary.Interop;
 using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
 using SuperMemoAssistant.Services;
+using SuperMemoAssistant.Services.UI.Configuration;
 using SuperMemoAssistant.Services.UI.Configuration.ElementPicker;
 using SuperMemoAssistant.Sys.ComponentModel;
 
@@ -55,7 +56,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
                 "Save",
                 IsDefault = true,
                 Validates = true)]
-  public class DictCfg : IElementPickerCallback, INotifyPropertyChangedEx
+  public class DictCfg : CfgBase<DictCfg>, IElementPickerCallback, INotifyPropertyChangedEx
   {
     #region Properties & Fields - Public
 

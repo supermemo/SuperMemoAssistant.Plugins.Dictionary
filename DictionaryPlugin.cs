@@ -111,9 +111,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     /// <inheritdoc />
     public override void ShowSettings()
     {
-      Application.Current.Dispatcher.Invoke(
-        () => new ConfigurationWindow(HotKeyManager.Instance, Config).ShowAndActivate()
-      );
+      ConfigurationWindow.ShowAndActivate(HotKeyManager.Instance, Config);
     }
 
     #endregion

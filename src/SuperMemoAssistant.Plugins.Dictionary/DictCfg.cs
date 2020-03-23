@@ -85,7 +85,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     public string DefaultLanguageStr
     {
       get => DefaultLanguage.ToString();
-      set => DefaultLanguage = MonolingualDictionaries.SafeGet(value) ?? DictionaryConst.DefaultDictionary;
+      set => DefaultLanguage = MonolingualDictionaries.SafeRead(value) ?? DictionaryConst.DefaultDictionary;
     }
 
     [JsonIgnore]

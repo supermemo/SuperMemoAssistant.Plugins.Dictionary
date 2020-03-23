@@ -31,11 +31,11 @@
         <dependency id="Stubble.Compilation" version="1.6.3" />
         <dependency id="Stubble.Core" version="1.6.3" />
         <dependency id="Stubble.Helpers" version="1.0.25" />
-        <dependency id="SuperMemoAssistant.Interop" version="2.0.3.32" />
+        <dependency id="SuperMemoAssistant.Interop" version="2.0.4.6" />
         <dependency id="SuperMemoAssistant.mshtml" version="7.0.3300.1" />
         <dependency id="SuperMemoAssistant.Plugins.Dictionary.Interop" version="2.0.3.18" />
         <dependency id="SuperMemoAssistant.Services.Sentry" version="1.0.1.14" />
-        <dependency id="SuperMemoAssistant.Services.UI" version="2.0.3.20" />
+        <dependency id="SuperMemoAssistant.Services.UI" version="2.0.3.26" />
       </group>
     </dependencies>
   </metadata>

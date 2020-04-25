@@ -45,6 +45,8 @@ using SuperMemoAssistant.Plugins.Dictionary.Interop.OxfordDictionaries.Models;
 
 namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
 {
+  using System.Globalization;
+
   public class OxfordDictionaryClient : IDisposable
   {
     #region Properties & Fields - Non-Public
@@ -118,11 +120,10 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
 
         word = word.Trim()
                    .Replace(" ", "_")
-                   .ToLower();
+                   .ToLowerInvariant();
         var searchPath = $"entries/{language}/{word}";
 
-        var jsonString = await SendHttpGetRequest(searchPath,
-                                                  ct);
+        var jsonString = await SendHttpGetRequest(searchPath, ct);
 
         if (jsonString == null)
           return null;
@@ -131,7 +132,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
       }
       catch (Exception ex)
       {
-        LogTo.Error(ex, $"Exception caught while looking up entry for word {word}");
+        LogTo.Error(ex, "Exception caught while looking up entry for word {Word}", word);
         throw;
       }
     }
@@ -163,11 +164,10 @@ namespace SuperMemoAssistant.Plugins.Dictionary.OxfordDictionaries
 
         word = word.Trim()
                    .Replace(" ", "_")
-                   .ToLower();
+                   .ToLowerInvariant();
         var searchPath = $"lemmas/{language}/{word}";
 
-        var jsonString = await SendHttpGetRequest(searchPath,
-                                                  ct);
+        var jsonString = await SendHttpGetRequest(searchPath, ct);
 
         if (jsonString == null)
           return null;

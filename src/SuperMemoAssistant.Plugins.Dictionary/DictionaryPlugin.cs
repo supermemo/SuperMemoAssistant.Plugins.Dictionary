@@ -93,14 +93,14 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     /// <inheritdoc />
     protected override void PluginInit()
     {
-      Config = Svc.Configuration.Load<DictCfg>().Result ?? new DictCfg();
+      Config = Svc.Configuration.Load<DictCfg>() ?? new DictCfg();
 
       _dictionaryService = new DictionaryService();
 
       Svc.HotKeyManager.RegisterGlobal(
         "LookupWord",
         "Dictionary: Lookup word",
-        HotKeyScope.SMBrowser,
+        HotKeyScopes.SMBrowser,
         new HotKey(Key.D, KeyModifiers.CtrlAlt),
         LookupWord
       );

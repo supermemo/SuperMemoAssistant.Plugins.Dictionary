@@ -91,12 +91,20 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     #region Methods Impl
 
     /// <inheritdoc />
-    protected override void PluginInit()
+    protected override void OnPluginInitialized()
     {
       Config = Svc.Configuration.Load<DictCfg>() ?? new DictCfg();
 
       _dictionaryService = new DictionaryService();
 
+      PublishService<IDictionaryService, DictionaryService>(_dictionaryService);
+
+      base.OnPluginInitialized();
+    }
+    
+    /// <inheritdoc />
+    protected override void OnSMStarted()
+    {
       Svc.HotKeyManager.RegisterGlobal(
         "LookupWord",
         "Dictionary: Lookup word",
@@ -105,7 +113,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
         LookupWord
       );
 
-      PublishService<IDictionaryService, DictionaryService>(_dictionaryService);
+      base.OnSMStarted();
     }
 
     /// <inheritdoc />

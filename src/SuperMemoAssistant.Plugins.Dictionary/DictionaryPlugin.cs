@@ -60,7 +60,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     #region Constructors
 
     /// <inheritdoc />
-    public DictionaryPlugin() : base("https://a63c3dad9552434598dae869d2026696@sentry.io/1362046") { }
+    public DictionaryPlugin() : base("https://045dfc7e9aa74a11bbe4dbcd0d503b3b@o218793.ingest.sentry.io/5506804") { }
 
     #endregion
 
@@ -103,7 +103,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     }
     
     /// <inheritdoc />
-    protected override void OnSMStarted()
+    protected override void OnSMStarted(bool wasSMAlreadyStarted)
     {
       Svc.HotKeyManager.RegisterGlobal(
         "LookupWord",
@@ -113,7 +113,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
         LookupWord
       );
 
-      base.OnSMStarted();
+      base.OnSMStarted(wasSMAlreadyStarted);
     }
 
     /// <inheritdoc />

@@ -119,7 +119,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     /// <inheritdoc />
     public override void ShowSettings()
     {
-      ConfigurationWindow.ShowAndActivate(HotKeyManager.Instance, Config);
+      ConfigurationWindow.ShowAndActivate("Dictionary Settings", HotKeyManager.Instance, Config);
     }
 
     #endregion

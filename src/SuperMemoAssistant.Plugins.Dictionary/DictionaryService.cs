@@ -52,7 +52,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
   {
     #region Properties & Fields - Non-Public
 
-    private DictCfg                Config           => Svc<DictionaryPlugin>.Plugin.Config;
+    private static DictCfg                Config           => Svc<DictionaryPlugin>.Plugin.Config;
     private OxfordDictionaryClient OxfordDictClient { get; }
     private StubbleVisitorRenderer MustacheEngine   { get; }
 
@@ -100,7 +100,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
 
     #region Methods
 
-    private StubbleVisitorRenderer CreateStubbleVisitor()
+    private static StubbleVisitorRenderer CreateStubbleVisitor()
     {
       var helpers = new Helpers()
         .Register<string>("F_Escape", (_, str) => str.HtmlEncode());
@@ -125,7 +125,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     {
       if (DictionaryConst.AllMonolingualLanguages.Contains(language) == false)
       {
-        LogTo.Warning($"Invalid language requested: {language}");
+        LogTo.Warning("Invalid language requested: {Language}", language);
         // ReSharper disable once LocalizableElement
         throw new ArgumentException($"Invalid language requested: {language}", nameof(language));
       }
@@ -146,7 +146,7 @@ namespace SuperMemoAssistant.Plugins.Dictionary
     {
       if (DictionaryConst.AllMonolingualLanguages.Contains(language) == false)
       {
-        LogTo.Warning($"Invalid language requested: {language}");
+        LogTo.Warning("Invalid language requested: {Language}", language);
         // ReSharper disable once LocalizableElement
         throw new ArgumentException($"Invalid language requested: {language}", nameof(language));
       }
@@ -180,16 +180,14 @@ namespace SuperMemoAssistant.Plugins.Dictionary
                              switch (ex)
                              {
                                case StubbleException stubbleException:
-                                 var errorMsg = @$"Mustache rendering failed.
+                                 LogTo.Warning(stubbleException, @"Mustache rendering failed.
 Template:
 -------------------------------------
-{Config.RenderTemplate}
+{RenderTemplate}
 
 Data:
 -------------------------------------
-{entryResult.Serialize()}";
-
-                                 LogTo.Warning(stubbleException, errorMsg);
+{EntryResult}", Config.RenderTemplate, entryResult.Serialize());
                                  break;
 
                                default:
